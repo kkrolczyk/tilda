@@ -215,6 +215,33 @@ static void load_custom_css_file () {
     g_free (filename);
 }
 
+static void just_force_dbus_toggle_for_wayland(char window_id)
+{
+    char name[sizeof(TILDA_DBUS_ACTIONS_BUS_NAME) + 1] = TILDA_DBUS_ACTIONS_BUS_NAME;
+    name[sizeof(TILDA_DBUS_ACTIONS_BUS_NAME) - 1] = window_id;
+    name[sizeof(TILDA_DBUS_ACTIONS_BUS_NAME)] = 0;
+    char path[sizeof(TILDA_DBUS_ACTIONS_OBJECT_PATH) + 1] = TILDA_DBUS_ACTIONS_OBJECT_PATH;
+    path[sizeof(TILDA_DBUS_ACTIONS_OBJECT_PATH) - 1] = window_id;
+    path[sizeof(TILDA_DBUS_ACTIONS_OBJECT_PATH)] = 0;
+    GDBusConnection *conn = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
+    GError* error = {0};
+    if (conn)
+    {
+        g_dbus_connection_call_sync (conn,
+                    name, path, "com.github.lanoxx.tilda.Actions", "force_toggle",
+                    NULL, NULL, G_DBUS_CALL_FLAGS_NONE,
+                    -1, NULL, &error);
+        g_object_unref(conn);
+        g_print (_("calling name '%s'.\n"), name);
+        g_print (_("calling path '%s'.\n"), path);
+        if (error != NULL)
+        {
+            g_printerr ("Failed toggling visibility: %s\n", error->message);
+            g_error_free (error);
+        }
+    }
+}
+
 int main (int argc, char *argv[])
 {
 #ifdef DEBUG
@@ -230,12 +257,6 @@ int main (int argc, char *argv[])
     DEBUG_FUNCTION_MESSAGE ("main", "Using libvte version: %i.%i.%i",
                             VTE_MAJOR_VERSION, VTE_MINOR_VERSION, VTE_MICRO_VERSION);
 
-    /* Set supported backend to X11 */
-    gdk_set_allowed_backends ("x11");
-
-    tilda_window tw;
-    /* NULL set the tw pointers so we can get a clean exit on initialization failure */
-    memset(&tw, 0, sizeof(tilda_window));
 
     struct lock_info lock;
     gboolean need_wizard = FALSE;
@@ -260,7 +281,7 @@ int main (int argc, char *argv[])
     tilda_cli_options *cli_options = tilda_cli_options_new ();
     need_wizard = tilda_cli_options_parse_options (cli_options, argc, argv, &config_file);
 
-    if (config_file) {	  // if there was a config file specified via cli
+    if (config_file) {   // if there was a config file specified via cli
         if (!g_file_test (config_file, G_FILE_TEST_EXISTS)) {
             g_printerr (_("Specified config file '%s' does not exist. Reverting to default path.\n"),
                     config_file);
@@ -269,17 +290,28 @@ int main (int argc, char *argv[])
     } else {    // if not, we look for the defaut config file
         config_file = get_config_file_name (lock.instance);
     }
-
-    /* Initialize GTK. Any code that interacts with GTK (e.g. creating a widget)
-     * should come after this call. Gtk initialization should happen before we
-     * initialize the config file. */
-    gtk_init (&argc, &argv);
-
     /* Start up the configuration system and load from file */
     gint config_init_result = config_init (config_file);
 
     /* Set up possible overridden config options */
-    setup_config_from_cli_options(cli_options);
+    setup_config_from_cli_options (cli_options);
+
+    if (cli_options->toggle_win_visibility) {
+        char window_id = (cli_options->toggle_win_visibility) + '0' - 1; // type default is 0
+        just_force_dbus_toggle_for_wayland (window_id);
+        return 0;
+    }
+
+    /* Set supported backend to X11 */
+    gdk_set_allowed_backends ("x11");
+
+    tilda_window tw;
+    /* NULL set the tw pointers so we can get a clean exit on initialization failure */
+    memset(&tw, 0, sizeof(tilda_window));
+    /* Initialize GTK. Any code that interacts with GTK (e.g. creating a widget)
+     * should come after this call. Gtk initialization should happen before we
+     * initialize the config file. */
+    gtk_init (&argc, &argv);
 
     if (config_init_result > 0) {
         show_startup_dialog (config_init_result);

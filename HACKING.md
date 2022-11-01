@@ -41,6 +41,9 @@ be possible to compile with:
 Changing to `build/` and calling `autogen.sh` relative from there makes sure
 that we perform an out-of-tree build and all generated files are stored inside
 `build/`. This way build artifacts will not clutter the source directory.
+For debug messages add `--debug-functions` and `--enable-debug` to autogen call.
+
+   ../autogen.sh --enable-debug-functions --enable-debug
 
 If you get the following error message, then you are missing the `autopoint`
 binary which is part of the autotools suite. On Ubuntu the `dh-autoreconf`
