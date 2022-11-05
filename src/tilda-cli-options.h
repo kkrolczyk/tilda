@@ -11,6 +11,7 @@ struct tilda_cli_options {
     gchar *font;
     gchar *working_dir;
     gchar *session_file;
+    gint toggle_win_visibility;
     gint back_alpha;
     gint lines;
     gint x_pos;

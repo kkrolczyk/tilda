@@ -2,5 +2,6 @@
 <node name="/">
     <interface name="com.github.lanoxx.tilda.Actions">
         <method name="Toggle" />
+        <method name="force_toggle" />
     </interface>
 </node>

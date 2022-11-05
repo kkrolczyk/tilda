@@ -3,10 +3,24 @@
 #include "key_grabber.h"
 #include "tilda-dbus.h"
 
-#define TILDA_DBUS_ACTIONS_BUS_NAME "com.github.lanoxx.tilda.Actions"
-#define TILDA_DBUS_ACTIONS_OBJECT_PATH "/com/github/lanoxx/tilda/Actions"
-
 static gchar * tilda_dbus_actions_get_object_path (tilda_window *window);
+
+static void on_handle (enum pull_action op, gboolean force, gpointer user_data)
+{
+    tilda_window *window = user_data;
+    pull (window, op, force);
+}
+
+static gboolean
+on_handle_forcetoggle (TildaDbusActions *skeleton,
+                  GDBusMethodInvocation *invocation,
+                  gpointer user_data)
+{
+    on_handle(PULL_TOGGLE, TRUE, user_data);
+    tilda_dbus_actions_complete_toggle (skeleton, invocation);
+    return GDK_EVENT_STOP;
+}
+
 
 static gboolean
 on_handle_toggle (TildaDbusActions *skeleton,
@@ -42,7 +56,8 @@ on_name_acquired (GDBusConnection *connection,
 
     actions = tilda_dbus_actions_skeleton_new ();
 
-    g_signal_connect (actions, "handle-toggle",G_CALLBACK (on_handle_toggle), window);
+    g_signal_connect (actions, "handle-toggle", G_CALLBACK (on_handle_toggle), window);
+    g_signal_connect (actions, "handle-force_toggle", G_CALLBACK (on_handle_forcetoggle), window);
 
     path = tilda_dbus_actions_get_object_path (tw);
 

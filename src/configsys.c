@@ -276,7 +276,7 @@ gint config_setint (const gchar *key, const glong val)
     return 0;
 }
 
-gint config_setnint(const gchar *key, const glong val, const guint idx)
+gint config_setnint (const gchar *key, const glong val, const guint idx)
 {
     config_mutex_lock ();
     cfg_setnint (tc, key, val, idx);
@@ -294,7 +294,7 @@ gint config_setstr (const gchar *key, const gchar *val)
     return 0;
 }
 
-gint config_setbool(const gchar *key, const gboolean val)
+gint config_setbool (const gchar *key, const gboolean val)
 {
     config_mutex_lock ();
     cfg_setbool (tc, key, val);
@@ -314,7 +314,7 @@ glong config_getint (const gchar *key)
     return temp;
 }
 
-glong config_getnint(const gchar *key, const guint idx)
+glong config_getnint (const gchar *key, const guint idx)
 {
     glong temp;
 
@@ -336,7 +336,7 @@ gchar* config_getstr (const gchar *key)
     return temp;
 }
 
-gboolean config_getbool(const gchar *key)
+gboolean config_getbool (const gchar *key)
 {
     gboolean temp;
 
