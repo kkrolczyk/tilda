@@ -1,3 +1,8 @@
+version 1.7.0 (2022-11-11):
+	* Session support (kkrolczyk)
+	* better support for wayland (kkrolczyk)
+	* Launch search in default search engine (kkrolczyk)
+
 version 1.5.0 (2020-02-02):
 	* Search is now backwards by default (Sebastian Geiger).
 	* Tilda now handles monitor changes and adjusts its size automatically.
